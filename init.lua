@@ -4,7 +4,6 @@ xban = { }
 local MP = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(MP.."/serialize.lua")
-dofile(MP.."/shutil.lua")
 
 local db = { }
 local tempbans = { }
@@ -260,10 +259,6 @@ local function load_db()
 		end
 	end
 end
-
--- Backup database
-shutil.copy_file(DB_FILENAME,
-  DB_FILENAME.."."..os.date("%Y%m%d%H%M%S"))
 
 minetest.register_on_shutdown(save_db)
 minetest.after(SAVE_INTERVAL, save_db)
