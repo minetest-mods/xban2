@@ -10,7 +10,7 @@ end
 local function my_serialize_2(t, level)
 	level = level or 0
 	local lines = { }
-	local indent = ("  "):rep(level)
+	local indent = ("\t"):rep(level)
 	for k, v in pairs(t) do
 		local typ = type(v)
 		if typ == "table" then
