@@ -1,9 +1,7 @@
 
-xban = { }
+xban = { MP = minetest.get_modpath(minetest.get_current_modname()) }
 
-local MP = minetest.get_modpath(minetest.get_current_modname())
-
-dofile(MP.."/serialize.lua")
+dofile(xban.MP.."/serialize.lua")
 
 local db = { }
 local tempbans = { }
@@ -262,3 +260,5 @@ minetest.register_on_shutdown(save_db)
 minetest.after(SAVE_INTERVAL, save_db)
 load_db()
 xban.db = db
+
+dofile(xban.MP.."/dbimport.lua")
