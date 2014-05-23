@@ -235,7 +235,7 @@ minetest.register_chatcommand("xban_record", {
 		end
 		if e.last_pos then
 			minetest.chat_send_player(name,
-			  ("[%s]: User was last seen at %s"):format(
+			  ("User was last seen at %s"):format(
 			  minetest.pos_to_string(e.last_pos)))
 		end
 	end,
