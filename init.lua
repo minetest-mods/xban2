@@ -200,6 +200,41 @@ minetest.register_chatcommand("xunban", {
 	end,
 })
 
+minetest.register_chatcommand("xban_record", {
+	description = "Show the ban records of a player",
+	params = "<player_or_ip>",
+	privs = { ban=true },
+	func = function(name, params)
+		local plname = params:match("%S+")
+		if not plname then
+			minetest.chat_send_player(name,
+			  "Usage: /xban_record <player_or_ip>")
+			return
+		end
+		local e = xban.find_entry(params)
+		if not e then
+			minetest.chat_send_player(name,
+			  ("[xban_record] No entry for `%s'"):format(params))
+			return
+		elseif (not e.record) or (#e.record == 0) then
+			minetest.chat_send_player(name,
+			  ("[xban_record] `%s' has no ban records"):format(params))
+			return
+		end
+		for _, rec in ipairs(e.record) do
+			local msg
+			if rec.expires then
+				msg = ("%s, Expires: %s"):format(
+				  rec.reason, os.date("%c", e.expires))
+			else
+				msg = rec.reason
+			end
+			minetest.chat_send_player(name,
+			  ("[%s]: %s"):format(os.date("%c", e.time), msg))
+		end
+	end,
+})
+
 local function check_temp_bans()
 	minetest.after(60, check_temp_bans)
 	local to_rm = { }
