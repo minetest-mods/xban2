@@ -131,15 +131,22 @@ function xban.unban_player(player, source) --> bool, err
 end
 
 minetest.register_on_prejoinplayer(function(name, ip)
-	local e = xban.find_entry(name) or xban.find_entry(ip, true)
-	e.names[name] = true
-	e.names[ip] = true
+	local e = xban.find_entry(name) or xban.find_entry(ip)
+	if not e then return end
 	if e.banned then
 		local date = (e.expires and os.date("%c", e.expires)
 		  or "the end of time")
 		return ("Banned: Expires: %s, Reason: %s"):format(
 		  date, e.reason)
 	end
+end)
+
+minetest.register_on_joinplayer(function(player)
+	local name = player:get_player_name()
+	local ip = minetest.get_player_ip(name)
+	local e = xban.find_entry(name) or xban.find_entry(ip, true)
+	e.names[name] = true
+	e.names[ip] = true
 end)
 
 minetest.register_chatcommand("xban", {
