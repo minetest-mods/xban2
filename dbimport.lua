@@ -3,6 +3,7 @@ xban.importers = { }
 
 dofile(xban.MP.."/importers/minetest.lua")
 dofile(xban.MP.."/importers/v1.lua")
+dofile(xban.MP.."/importers/v2.lua")
 
 minetest.register_chatcommand("xban_dbi", {
 	description = "Import old databases",

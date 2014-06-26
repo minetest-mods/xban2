@@ -51,6 +51,7 @@ function xban.find_entry(player, create) --> entry, index
 		end
 	end
 	if create then
+		print(("Created new entry for `%s'"):format(player))
 		local e = {
 			names = { [player]=true },
 			banned = false,
