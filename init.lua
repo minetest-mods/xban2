@@ -234,12 +234,12 @@ minetest.register_chatcommand("xban_record", {
 			local msg
 			if rec.expires then
 				msg = ("%s, Expires: %s"):format(
-				  rec.reason, os.date("%c", e.expires))
+				  rec.reason, os.date("%c", rec.expires))
 			else
 				msg = rec.reason
 			end
 			minetest.chat_send_player(name,
-			  ("[%s]: %s"):format(os.date("%c", e.time), msg))
+			  ("[%s]: %s"):format(os.date("%c", rec.time), msg))
 		end
 		if e.last_pos then
 			minetest.chat_send_player(name,
