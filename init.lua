@@ -131,6 +131,32 @@ function xban.unban_player(player, source) --> bool, err
 	return true
 end
 
+function xban.get_record(player)
+	local e = xban.find_entry(player)
+	if not e then
+		return nil, ("No entry for `%s'"):format(player)
+	elseif (not e.record) or (#e.record == 0) then
+		return nil, ("`%s' has no ban records"):format(player)
+	end
+	local record = { }
+	for _, rec in ipairs(e.record) do
+		local msg
+		if rec.expires then
+			msg = ("%s, Expires: %s"):format(
+			  rec.reason, os.date("%c", e.expires))
+		else
+			msg = rec.reason
+		end
+		table.insert(record, ("[%s]: %s"):format(os.date("%c", e.time), msg))
+	end
+	local last_pos
+	if e.last_pos then
+		last_pos = ("User was last seen at %s"):format(
+		  minetest.pos_to_string(e.last_pos))
+	end
+	return record, last_pos
+end
+
 minetest.register_on_prejoinplayer(function(name, ip)
 	local e = xban.find_entry(name) or xban.find_entry(ip)
 	if not e then return end
@@ -220,31 +246,17 @@ minetest.register_chatcommand("xban_record", {
 			  "Usage: /xban_record <player_or_ip>")
 			return
 		end
-		local e = xban.find_entry(params)
-		if not e then
-			minetest.chat_send_player(name,
-			  ("[xban_record] No entry for `%s'"):format(params))
-			return
-		elseif (not e.record) or (#e.record == 0) then
-			minetest.chat_send_player(name,
-			  ("[xban_record] `%s' has no ban records"):format(params))
+		local record, last_pos = xban.get_record(plname)
+		if not record then
+			local err = last_pos
+			minetest.chat_send_player(name, "[xban] "..err)
 			return
 		end
-		for _, rec in ipairs(e.record) do
-			local msg
-			if rec.expires then
-				msg = ("%s, Expires: %s"):format(
-				  rec.reason, os.date("%c", rec.expires))
-			else
-				msg = rec.reason
-			end
-			minetest.chat_send_player(name,
-			  ("[%s]: %s"):format(os.date("%c", rec.time), msg))
+		for _, e in ipairs(record) do
+			minetest.chat_send_player(name, "[xban] "..e)
 		end
-		if e.last_pos then
-			minetest.chat_send_player(name,
-			  ("User was last seen at %s"):format(
-			  minetest.pos_to_string(e.last_pos)))
+		if last_pos then
+			minetest.chat_send_player(name, "[xban] "..last_pos)
 		end
 	end,
 })
@@ -311,3 +323,4 @@ load_db()
 xban.db = db
 
 dofile(xban.MP.."/dbimport.lua")
+dofile(xban.MP.."/gui.lua")
