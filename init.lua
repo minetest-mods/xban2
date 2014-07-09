@@ -174,6 +174,7 @@ minetest.register_on_joinplayer(function(player)
 	local e = xban.find_entry(name) or xban.find_entry(ip, true)
 	e.names[name] = true
 	e.names[ip] = true
+	e.last_seen = os.time()
 end)
 
 minetest.register_chatcommand("xban", {
