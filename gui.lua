@@ -40,9 +40,7 @@ local function make_fs(name)
 					"textlist[4,2;5,5.5;entry;"..ESC(err)..";0]")
 		end
 	end
-	fs = table_concat(fs)
-	print(fs)
-	return fs
+	return table_concat(fs)
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
