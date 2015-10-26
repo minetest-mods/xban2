@@ -140,12 +140,12 @@ function xban.get_record(player)
 	end
 	local record = { }
 	for _, rec in ipairs(e.record) do
-		local msg
+		local msg = rec.reason or "No reason given."
 		if rec.expires then
-			msg = ("%s, Expires: %s"):format(
-			  rec.reason, os.date("%c", e.expires))
-		else
-			msg = rec.reason
+			msg = msg..(", Expires: %s"):format(os.date("%c", e.expires))
+		end
+		if rec.source then
+			msg = msg..", Source: "..rec.source
 		end
 		table.insert(record, ("[%s]: %s"):format(os.date("%c", e.time), msg))
 	end
