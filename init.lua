@@ -73,6 +73,9 @@ end
 
 function xban.ban_player(player, source, expires, reason) --> bool, err
 	local e = xban.find_entry(player, true)
+	if e.banned then
+		return nil, "Already banned"
+	end
 	local rec = {
 		source = source,
 		time = os.time(),
@@ -195,8 +198,8 @@ minetest.register_chatcommand("xban", {
 		if not (plname and reason) then
 			return false, "Usage: /xban <player> <reason>"
 		end
-		xban.ban_player(plname, name, nil, reason)
-		return true, ("Banned %s."):format(plname)
+		local ok, e = xban.ban_player(plname, name, nil, reason)
+		return ok, ok and ("Banned %s."):format(plname) or e
 	end,
 })
 
@@ -214,8 +217,9 @@ minetest.register_chatcommand("xtempban", {
 			return false, "You must ban for at least 60 seconds."
 		end
 		local expires = os.time() + time
-		xban.ban_player(plname, name, expires, reason)
-		return true, ("Banned %s until %s."):format(plname, os.date("%c", expires))
+		local ok, e = xban.ban_player(plname, name, expires, reason)
+		return ok, (ok and ("Banned %s until %s."):format(
+				plname, os.date("%c", expires)) or e)
 	end,
 })
 
