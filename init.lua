@@ -72,6 +72,9 @@ function xban.get_info(player) --> ip_name_list, banned, last_record
 end
 
 function xban.ban_player(player, source, expires, reason) --> bool, err
+	if xban.get_whitelist(player) then
+		return nil, "Player is whitelisted; remove from whitelist first"
+	end
 	local e = xban.find_entry(player, true)
 	if e.banned then
 		return nil, "Already banned"
@@ -134,6 +137,28 @@ function xban.unban_player(player, source) --> bool, err
 	return true
 end
 
+function xban.get_whitelist(name_or_ip)
+	return db.whitelist and db.whitelist[name_or_ip]
+end
+
+function xban.remove_whitelist(name_or_ip)
+	if db.whitelist then
+		db.whitelist[name_or_ip] = nil
+	end
+end
+
+function xban.add_whitelist(name_or_ip, source)
+	local wl = db.whitelist
+	if not wl then
+		wl = { }
+		db.whitelist = wl
+	end
+	wl[name_or_ip] = {
+		source=source,
+	}
+	return true
+end
+
 function xban.get_record(player)
 	local e = xban.find_entry(player)
 	if not e then
@@ -161,6 +186,8 @@ function xban.get_record(player)
 end
 
 minetest.register_on_prejoinplayer(function(name, ip)
+	local wl = db.whitelist or { }
+	if wl[name] or wl[ip] then return end
 	local e = xban.find_entry(name) or xban.find_entry(ip)
 	if not e then return end
 	if e.banned then
@@ -261,6 +288,31 @@ minetest.register_chatcommand("xban_record", {
 			minetest.chat_send_player(name, "[xban] "..last_pos)
 		end
 		return true, "Record listed."
+	end,
+})
+
+minetest.register_chatcommand("xban_wl", {
+	description = "Manages the whitelist",
+	params = "(add|del|get) <name_or_ip>",
+	privs = { ban=true },
+	func = function(name, params)
+		local cmd, plname = params:match("%s*(%S+)%s*(%S+)")
+		if cmd == "add" then
+			xban.add_whitelist(plname, name)
+			ACTION("%s adds %s to whitelist", source, plname)
+			return true, "Added to whitelist: "..plname
+		elseif cmd == "del" then
+			xban.remove_whitelist(plname)
+			ACTION("%s removes %s to whitelist", source, plname)
+			return true, "Removed from whitelist: "..plname
+		elseif cmd == "get" then
+			local e = xban.get_whitelist(plname)
+			if e then
+				return true, "Source: "..(e.source or "Unknown")
+			else
+				return true, "No whitelist for: "..plname
+			end
+		end
 	end,
 })
 
