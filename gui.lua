@@ -100,6 +100,10 @@ end
 minetest.register_on_player_receive_fields(function(player, formname, fields)
 	if formname ~= FORMNAME then return end
 	local name = player:get_player_name()
+	if not minetest.check_player_privs(name, { ban=true}) then
+		minetest.log("Received xban form fields from user who lacks privilege:: "..name)
+		return
+	end
 	local state = get_state(name)
 	if fields.player then
 		local t = minetest.explode_textlist_event(fields.player)
