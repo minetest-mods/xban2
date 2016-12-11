@@ -361,10 +361,10 @@ local function load_db()
 		WARNING("Unable to load database: %s", "Read failed")
 		return
 	end
-	local t = minetest.deserialize(cont)
+	local t, e = minetest.deserialize(cont)
 	if not t then
 		WARNING("Unable to load database: %s",
-		  "Deserialization failed")
+		  "Deserialization failed: "..(e or "unknown error"))
 		return
 	end
 	db = t
