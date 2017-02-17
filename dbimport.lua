@@ -11,13 +11,13 @@ minetest.register_chatcommand("xban_dbi", {
 	privs = { server=true },
 	func = function(name, params)
 		if params == "--list" then
-			local names = { }
-			for name in pairs(xban.importers) do
-				table.insert(names, name)
+			local importers = { }
+			for importer in pairs(xban.importers) do
+				table.insert(importers, importer)
 			end
 			minetest.chat_send_player(name,
 			  ("[xban] Known importers: %s"):format(
-			  table.concat(names, ", ")))
+			  table.concat(importers, ", ")))
 			return
 		elseif not xban.importers[params] then
 			minetest.chat_send_player(name,

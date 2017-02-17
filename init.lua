@@ -24,9 +24,7 @@ local function make_logger(level)
 end
 
 local ACTION = make_logger("action")
-local INFO = make_logger("info")
 local WARNING = make_logger("warning")
-local ERROR = make_logger("error")
 
 local unit_to_secs = {
 	s = 1, m = 60, h = 3600,
@@ -299,11 +297,11 @@ minetest.register_chatcommand("xban_wl", {
 		local cmd, plname = params:match("%s*(%S+)%s*(%S+)")
 		if cmd == "add" then
 			xban.add_whitelist(plname, name)
-			ACTION("%s adds %s to whitelist", source, plname)
+			ACTION("%s adds %s to whitelist", name, plname)
 			return true, "Added to whitelist: "..plname
 		elseif cmd == "del" then
 			xban.remove_whitelist(plname)
-			ACTION("%s removes %s to whitelist", source, plname)
+			ACTION("%s removes %s to whitelist", name, plname)
 			return true, "Removed from whitelist: "..plname
 		elseif cmd == "get" then
 			local e = xban.get_whitelist(plname)
@@ -361,10 +359,10 @@ local function load_db()
 		WARNING("Unable to load database: %s", "Read failed")
 		return
 	end
-	local t, e = minetest.deserialize(cont)
+	local t, e2 = minetest.deserialize(cont)
 	if not t then
 		WARNING("Unable to load database: %s",
-		  "Deserialization failed: "..(e or "unknown error"))
+		  "Deserialization failed: "..(e2 or "unknown error"))
 		return
 	end
 	db = t
