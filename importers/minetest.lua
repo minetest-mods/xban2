@@ -1,8 +1,9 @@
+local S = xban.intllib
 
 function xban.importers.minetest()
 	local f, e = io.open(minetest.get_worldpath().."/ipban.txt")
 	if not f then
-		return false, "Unable to open `ipban.txt': "..e
+		return false, S("Unable to open `ipban.txt': ")..e
 	end
 	for line in f:lines() do
 		local ip, name = line:match("([^|]+)%|(.+)")
@@ -10,7 +11,7 @@ function xban.importers.minetest()
 			local entry
 			entry = xban.find_entry(ip, true)
 			entry.banned = true
-			entry.reason = "Banned in `ipban.txt'"
+			entry.reason = S("Banned in `ipban.txt'")
 			entry.names[name] = true
 			entry.names[ip] = true
 			entry.time = os.time()

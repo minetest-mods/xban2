@@ -1,8 +1,9 @@
+local S = xban.intllib
 
 function xban.importers.v1()
 	local f, e = io.open(minetest.get_worldpath().."/players.iplist")
 	if not f then
-		return false, "Unable to open `players.iplist': "..e
+		return false, S("Unable to open `players.iplist': ")..e
 	end
 	for line in f:lines() do
 		local list = line:split("|")
@@ -15,7 +16,7 @@ function xban.importers.v1()
 				entry.names[name] = true
 			end
 			if banned then
-				entry.reason = "Banned in `players.iplist'"
+				entry.reason = S("Banned in `players.iplist'")
 				entry.time = os.time()
 				entry.expires = nil
 				entry.source = "xban:importer_v1"

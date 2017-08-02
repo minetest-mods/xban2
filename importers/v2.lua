@@ -1,9 +1,10 @@
+local S = xban.intllib
 
 function xban.importers.v2()
 	return pcall(function()
 		local f, e = io.open(minetest.get_worldpath().."/players.iplist.v2")
 		if not f then
-			error("Unable to open `players.iplist.v2': "..e)
+			error(S("Unable to open `players.iplist.v2': ")..e)
 		end
 		local text = f:read("*a")
 		f:close()

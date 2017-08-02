@@ -1,6 +1,12 @@
 
 xban = { MP = minetest.get_modpath(minetest.get_current_modname()) }
 
+-- Load support for intllib.
+local MP = minetest.get_modpath(minetest.get_current_modname())
+local S, NS = dofile(MP.."/intllib.lua")
+
+xban.intllib = S
+
 dofile(xban.MP.."/serialize.lua")
 
 local db = { }
@@ -64,18 +70,18 @@ end
 function xban.get_info(player) --> ip_name_list, banned, last_record
 	local e = xban.find_entry(player)
 	if not e then
-		return nil, "No such entry"
+		return nil, S("No such entry")
 	end
 	return e.names, e.banned, e.record[#e.record]
 end
 
 function xban.ban_player(player, source, expires, reason) --> bool, err
 	if xban.get_whitelist(player) then
-		return nil, "Player is whitelisted; remove from whitelist first"
+		return nil, S("Player is whitelisted; remove from whitelist first")
 	end
 	local e = xban.find_entry(player, true)
 	if e.banned then
-		return nil, "Already banned"
+		return nil, S("Already banned")
 	end
 	local rec = {
 		source = source,
@@ -99,39 +105,39 @@ function xban.ban_player(player, source, expires, reason) --> bool, err
 	e.banned = true
 	local msg
 	local date = (expires and os.date("%c", expires)
-	  or "the end of time")
+	  or S("the end of time"))
 	if expires then
 		table.insert(tempbans, e)
-		msg = ("Banned: Expires: %s, Reason: %s"):format(date, reason)
+		msg = (S("Banned: Expires: %s, Reason: %s")):format(date, reason)
 	else
-		msg = ("Banned: Reason: %s"):format(reason)
+		msg = (S("Banned: Reason: %s")):format(reason)
 	end
 	for nm in pairs(e.names) do
 		minetest.kick_player(nm, msg)
 	end
-	ACTION("%s bans %s until %s for reason: %s", source, player,
+	ACTION(S("%s bans %s until %s for reason: %s"), source, player,
 	  date, reason)
-	ACTION("Banned Names/IPs: %s", table.concat(e.names, ", "))
+	ACTION(S("Banned Names/IPs: %s"), table.concat(e.names, ", "))
 	return true
 end
 
 function xban.unban_player(player, source) --> bool, err
 	local e = xban.find_entry(player)
 	if not e then
-		return nil, "No such entry"
+		return nil, S("No such entry")
 	end
 	local rec = {
 		source = source,
 		time = os.time(),
-		reason = "Unbanned",
+		reason = S("Unbanned"),
 	}
 	table.insert(e.record, rec)
 	e.banned = false
 	e.reason = nil
 	e.expires = nil
 	e.time = nil
-	ACTION("%s unbans %s", source, player)
-	ACTION("Unbanned Names/IPs: %s", table.concat(e.names, ", "))
+	ACTION(S("%s unbans %s"), source, player)
+	ACTION(S("Unbanned Names/IPs: %s"), table.concat(e.names, ", "))
 	return true
 end
 
@@ -160,15 +166,15 @@ end
 function xban.get_record(player)
 	local e = xban.find_entry(player)
 	if not e then
-		return nil, ("No entry for `%s'"):format(player)
+		return nil, (S("No entry for `%s'")):format(player)
 	elseif (not e.record) or (#e.record == 0) then
-		return nil, ("`%s' has no ban records"):format(player)
+		return nil, (S("`%s' has no ban records")):format(player)
 	end
 	local record = { }
 	for _, rec in ipairs(e.record) do
-		local msg = rec.reason or "No reason given."
+		local msg = rec.reason or S("No reason given.")
 		if rec.expires then
-			msg = msg..(", Expires: %s"):format(os.date("%c", e.expires))
+			msg = msg..(S(", Expires: %s")):format(os.date("%c", e.expires))
 		end
 		if rec.source then
 			msg = msg..", Source: "..rec.source
@@ -177,7 +183,7 @@ function xban.get_record(player)
 	end
 	local last_pos
 	if e.last_pos then
-		last_pos = ("User was last seen at %s"):format(
+		last_pos = (S("User was last seen at %s")):format(
 		  minetest.pos_to_string(e.last_pos))
 	end
 	return record, last_pos
@@ -190,8 +196,8 @@ minetest.register_on_prejoinplayer(function(name, ip)
 	if not e then return end
 	if e.banned then
 		local date = (e.expires and os.date("%c", e.expires)
-		  or "the end of time")
-		return ("Banned: Expires: %s, Reason: %s"):format(
+		  or S("the end of time"))
+		return (S("Banned: Expires: %s, Reason: %s")):format(
 		  date, e.reason)
 	end
 end)
@@ -215,63 +221,63 @@ minetest.register_on_joinplayer(function(player)
 end)
 
 minetest.register_chatcommand("xban", {
-	description = "XBan a player",
+	description = S("XBan a player"),
 	params = "<player> <reason>",
 	privs = { ban=true },
 	func = function(name, params)
 		local plname, reason = params:match("(%S+)%s+(.+)")
 		if not (plname and reason) then
-			return false, "Usage: /xban <player> <reason>"
+			return false, S("Usage: /xban <player> <reason>")
 		end
 		local ok, e = xban.ban_player(plname, name, nil, reason)
-		return ok, ok and ("Banned %s."):format(plname) or e
+		return ok, ok and (S("Banned %s.")):format(plname) or e
 	end,
 })
 
 minetest.register_chatcommand("xtempban", {
-	description = "XBan a player temporarily",
+	description = S("XBan a player temporarily"),
 	params = "<player> <time> <reason>",
 	privs = { ban=true },
 	func = function(name, params)
 		local plname, time, reason = params:match("(%S+)%s+(%S+)%s+(.+)")
 		if not (plname and time and reason) then
-			return false, "Usage: /xtempban <player> <time> <reason>"
+			return false, S("Usage: /xtempban <player> <time> <reason>")
 		end
 		time = parse_time(time)
 		if time < 60 then
-			return false, "You must ban for at least 60 seconds."
+			return false, S("You must ban for at least 60 seconds.")
 		end
 		local expires = os.time() + time
 		local ok, e = xban.ban_player(plname, name, expires, reason)
-		return ok, (ok and ("Banned %s until %s."):format(
+		return ok, (ok and (S("Banned %s until %s.")):format(
 				plname, os.date("%c", expires)) or e)
 	end,
 })
 
 minetest.register_chatcommand("xunban", {
-	description = "XUnBan a player",
+	description = S("XUnBan a player"),
 	params = "<player_or_ip>",
 	privs = { ban=true },
 	func = function(name, params)
 		local plname = params:match("%S+")
 		if not plname then
 			minetest.chat_send_player(name,
-			  "Usage: /xunban <player_or_ip>")
+			  S("Usage: /xunban <player_or_ip>"))
 			return
 		end
 		local ok, e = xban.unban_player(plname, name)
-		return ok, ok and ("Unbanned %s."):format(plname) or e
+		return ok, ok and (S("Unbanned %s.")):format(plname) or e
 	end,
 })
 
 minetest.register_chatcommand("xban_record", {
-	description = "Show the ban records of a player",
+	description = S("Show the ban records of a player"),
 	params = "<player_or_ip>",
 	privs = { ban=true },
 	func = function(name, params)
 		local plname = params:match("%S+")
 		if not plname then
-			return false, "Usage: /xban_record <player_or_ip>"
+			return false, S("Usage: /xban_record <player_or_ip>")
 		end
 		local record, last_pos = xban.get_record(plname)
 		if not record then
@@ -285,30 +291,30 @@ minetest.register_chatcommand("xban_record", {
 		if last_pos then
 			minetest.chat_send_player(name, "[xban] "..last_pos)
 		end
-		return true, "Record listed."
+		return true, S("Record listed.")
 	end,
 })
 
 minetest.register_chatcommand("xban_wl", {
-	description = "Manages the whitelist",
+	description = S("Manages the whitelist"),
 	params = "(add|del|get) <name_or_ip>",
 	privs = { ban=true },
 	func = function(name, params)
 		local cmd, plname = params:match("%s*(%S+)%s*(%S+)")
 		if cmd == "add" then
 			xban.add_whitelist(plname, name)
-			ACTION("%s adds %s to whitelist", name, plname)
-			return true, "Added to whitelist: "..plname
+			ACTION(S("%s adds %s to whitelist"), source, plname)
+			return true, S("Added to whitelist: ")..plname
 		elseif cmd == "del" then
 			xban.remove_whitelist(plname)
-			ACTION("%s removes %s to whitelist", name, plname)
-			return true, "Removed from whitelist: "..plname
+			ACTION(S("%s removes %s to whitelist"), source, plname)
+			return true, S("Removed from whitelist: ")..plname
 		elseif cmd == "get" then
 			local e = xban.get_whitelist(plname)
 			if e then
-				return true, "Source: "..(e.source or "Unknown")
+				return true, S("Source: ")..(e.source or S("Unknown"))
 			else
-				return true, "No whitelist for: "..plname
+				return true, S("No whitelist for: ")..plname
 			end
 		end
 	end,
@@ -339,10 +345,10 @@ local function save_db()
 	if f then
 		local ok, err = f:write(xban.serialize(db))
 		if not ok then
-			WARNING("Unable to save database: %s", err)
+			WARNING(S("Unable to save database: %s"), err)
 		end
 	else
-		WARNING("Unable to save database: %s", e)
+		WARNING(S("Unable to save database: %s"), e)
 	end
 	if f then f:close() end
 	return
@@ -351,18 +357,18 @@ end
 local function load_db()
 	local f, e = io.open(DB_FILENAME, "rt")
 	if not f then
-		WARNING("Unable to load database: %s", e)
+		WARNING(S("Unable to load database: %s"), e)
 		return
 	end
 	local cont = f:read("*a")
 	if not cont then
-		WARNING("Unable to load database: %s", "Read failed")
+		WARNING(S("Unable to load database: %s"), S("Read failed"))
 		return
 	end
 	local t, e2 = minetest.deserialize(cont)
 	if not t then
-		WARNING("Unable to load database: %s",
-		  "Deserialization failed: "..(e2 or "unknown error"))
+		WARNING(S("Unable to load database: %s"),
+		  S("Deserialization failed :")..(e2 or "unknown error"))
 		return
 	end
 	db = t

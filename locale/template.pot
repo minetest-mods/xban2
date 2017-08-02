@@ -1,0 +1,270 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-04-30 07:42+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: dbimport.lua
+msgid "Import old databases"
+msgstr ""
+
+#: dbimport.lua
+#, lua-format
+msgid "[xban] Known importers: %s"
+msgstr ""
+
+#: dbimport.lua
+#, lua-format
+msgid "[xban] Unknown importer `%s'"
+msgstr ""
+
+#: dbimport.lua
+msgid "[xban] Try `--list'"
+msgstr ""
+
+#: dbimport.lua
+msgid "[xban] Import successfull"
+msgstr ""
+
+#: dbimport.lua
+#, lua-format
+msgid "[xban] Import failed: %s"
+msgstr ""
+
+#: gui.lua init.lua
+#, lua-format
+msgid "No entry for `%s'"
+msgstr ""
+
+#: gui.lua init.lua
+#, lua-format
+msgid "`%s' has no ban records"
+msgstr ""
+
+#: gui.lua
+msgid "%Y-%m-%d %H:%M:%S"
+msgstr ""
+
+#: gui.lua init.lua
+msgid "No reason given."
+msgstr ""
+
+#: gui.lua
+msgid "Search"
+msgstr ""
+
+#: gui.lua init.lua
+msgid "Source: "
+msgstr ""
+
+#: gui.lua
+msgid "Time: "
+msgstr ""
+
+#: gui.lua
+msgid "No entry matches the query."
+msgstr ""
+
+#: gui.lua
+msgid "[xban2] Received fields from unauthorized user: "
+msgstr ""
+
+#: gui.lua
+msgid "Show XBan GUI"
+msgstr ""
+
+#: importers/minetest.lua
+msgid "Unable to open `ipban.txt': "
+msgstr ""
+
+#: importers/minetest.lua
+msgid "Banned in `ipban.txt'"
+msgstr ""
+
+#: importers/v1.lua
+msgid "Unable to open `players.iplist': "
+msgstr ""
+
+#: importers/v1.lua
+msgid "Banned in `players.iplist'"
+msgstr ""
+
+#: importers/v2.lua
+msgid "Unable to open `players.iplist.v2': "
+msgstr ""
+
+#: init.lua
+msgid "No such entry"
+msgstr ""
+
+#: init.lua
+msgid "Player is whitelisted; remove from whitelist first"
+msgstr ""
+
+#: init.lua
+msgid "Already banned"
+msgstr ""
+
+#: init.lua
+msgid "the end of time"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Banned: Expires: %s, Reason: %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Banned: Reason: %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "%s bans %s until %s for reason: %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Banned Names/IPs: %s"
+msgstr ""
+
+#: init.lua
+msgid "Unbanned"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "%s unbans %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Unbanned Names/IPs: %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid ", Expires: %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "User was last seen at %s"
+msgstr ""
+
+#: init.lua
+msgid "XBan a player"
+msgstr ""
+
+#: init.lua
+msgid "Usage: /xban <player> <reason>"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Banned %s."
+msgstr ""
+
+#: init.lua
+msgid "XBan a player temporarily"
+msgstr ""
+
+#: init.lua
+msgid "Usage: /xtempban <player> <time> <reason>"
+msgstr ""
+
+#: init.lua
+msgid "You must ban for at least 60 seconds."
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Banned %s until %s."
+msgstr ""
+
+#: init.lua
+msgid "XUnBan a player"
+msgstr ""
+
+#: init.lua
+msgid "Usage: /xunban <player_or_ip>"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Unbanned %s."
+msgstr ""
+
+#: init.lua
+msgid "Show the ban records of a player"
+msgstr ""
+
+#: init.lua
+msgid "Usage: /xban_record <player_or_ip>"
+msgstr ""
+
+#: init.lua
+msgid "Record listed."
+msgstr ""
+
+#: init.lua
+msgid "Manages the whitelist"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "%s adds %s to whitelist"
+msgstr ""
+
+#: init.lua
+msgid "Added to whitelist: "
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "%s removes %s to whitelist"
+msgstr ""
+
+#: init.lua
+msgid "Removed from whitelist: "
+msgstr ""
+
+#: init.lua
+msgid "Unknown"
+msgstr ""
+
+#: init.lua
+msgid "No whitelist for: "
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Unable to save database: %s"
+msgstr ""
+
+#: init.lua
+#, lua-format
+msgid "Unable to load database: %s"
+msgstr ""
+
+#: init.lua
+msgid "Read failed"
+msgstr ""
+
+#: init.lua
+msgid "Deserialization failed :"
+msgstr ""

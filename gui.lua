@@ -1,3 +1,4 @@
+local S = xban.intllib
 
 local FORMNAME = "xban2:main"
 local MAXLISTSIZE = 100
@@ -37,14 +38,14 @@ end
 local function get_record_simple(name)
 	local e = xban.find_entry(name)
 	if not e then
-		return nil, ("No entry for `%s'"):format(name)
+		return nil, (S("No entry for `%s'")):format(name)
 	elseif (not e.record) or (#e.record == 0) then
-		return nil, ("`%s' has no ban records"):format(name)
+		return nil, (S("`%s' has no ban records")):format(name)
 	end
 	local record = { }
 	for _, rec in ipairs(e.record) do
-		local msg = (os.date("%Y-%m-%d %H:%M:%S", rec.time).." | "
-				..(rec.reason or "No reason given."))
+		local msg = (os.date(S("%Y-%m-%d %H:%M:%S"), rec.time).." | "
+				..(rec.reason or S("No reason given.")))
 		table.insert(record, msg)
 	end
 	return record, e.record
@@ -61,7 +62,7 @@ local function make_fs(name)
 		"size[16,12]",
 		"label[0,-.1;Filter]",
 		"field[1.5,0;12.8,1;filter;;"..ESC(filter).."]",
-		"button[14,-.3;2,1;search;Search]",
+		"button[14,-.3;2,1;search;"..S("Search").."]",
 	}
 	local fsn = #fs
 	fsn=fsn+1 fs[fsn] = format("textlist[0,.8;4,9.3;player;%s;%d;0]",
@@ -79,8 +80,8 @@ local function make_fs(name)
 			local rec = e[ei]
 			if rec then
 				fsn=fsn+1 fs[fsn] = format("label[0,10.3;%s]",
-						ESC("Source: "..(rec.source or "<none>")
-							.."\nTime: "..os.date("%c", rec.time)
+						ESC(S("Source: ")..(rec.source or "<none>")
+							.."\n"..S("Time: ")..os.date("%c", rec.time)
 							.."\n"..(rec.expires and
 								os.date("%c", rec.expires) or "")),
 						pli)
@@ -90,7 +91,7 @@ local function make_fs(name)
 			fsn=fsn+1 fs[fsn] = "label[0,10.3;"..ESC(e).."]"
 		end
 	else
-		local e = "No entry matches the query."
+		local e = S("No entry matches the query.")
 		fsn=fsn+1 fs[fsn] = "textlist[4.2,.8;11.7,9.3;err;"..ESC(e)..";0]"
 		fsn=fsn+1 fs[fsn] = "label[0,10.3;"..ESC(e).."]"
 	end
@@ -102,7 +103,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local name = player:get_player_name()
 	if not minetest.check_player_privs(name, { ban=true }) then
 		minetest.log("warning",
-				"[xban2] Received fields from unauthorized user: "..name)
+				S("[xban2] Received fields from unauthorized user: ")..name)
 		return
 	end
 	local state = get_state(name)
@@ -131,7 +132,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 end)
 
 minetest.register_chatcommand("xban_gui", {
-	description = "Show XBan GUI",
+	description = S("Show XBan GUI"),
 	params = "",
 	privs = { ban=true, },
 	func = function(name, params)

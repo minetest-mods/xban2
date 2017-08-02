@@ -1,0 +1,271 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-04-30 07:52+0200\n"
+"PO-Revision-Date: 2017-04-30 08:12+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.12\n"
+"Last-Translator: fat115 <fat115@framasoft.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr_FR\n"
+
+#: dbimport.lua
+msgid "Import old databases"
+msgstr "Importer les anciennes bases de données"
+
+#: dbimport.lua
+#, lua-format
+msgid "[xban] Known importers: %s"
+msgstr "[xban] Importateurs connus : %s"
+
+#: dbimport.lua
+#, lua-format
+msgid "[xban] Unknown importer `%s'"
+msgstr "[xban] Importateurs inconnus : %s"
+
+#: dbimport.lua
+msgid "[xban] Try `--list'"
+msgstr "[xban] Essayez `--list'"
+
+#: dbimport.lua
+msgid "[xban] Import successfull"
+msgstr "[xban] Import réussi"
+
+#: dbimport.lua
+#, lua-format
+msgid "[xban] Import failed: %s"
+msgstr "[xban] Import échoué : %s"
+
+#: gui.lua init.lua
+#, lua-format
+msgid "No entry for `%s'"
+msgstr "Pas d'entrée pour `%s'"
+
+#: gui.lua init.lua
+#, lua-format
+msgid "`%s' has no ban records"
+msgstr "`%s' n'a jamais été banni"
+
+#: gui.lua
+msgid "%Y-%m-%d %H:%M:%S"
+msgstr "%d/%m/%Y %H:%M:%S"
+
+#: gui.lua init.lua
+msgid "No reason given."
+msgstr "Aucun motif fourni."
+
+#: gui.lua
+msgid "Search"
+msgstr "Rechercher"
+
+#: gui.lua init.lua
+msgid "Source: "
+msgstr "Source :"
+
+#: gui.lua
+msgid "Time: "
+msgstr "Durée : "
+
+#: gui.lua
+msgid "No entry matches the query."
+msgstr "Aucune entrée ne correspond à cette requête."
+
+#: gui.lua
+msgid "[xban2] Received fields from unauthorized user: "
+msgstr "[xban2] a reçu des champs d'un utilisateur non-autorisé : "
+
+#: gui.lua
+msgid "Show XBan GUI"
+msgstr "Affiche la fenêtre GUI XBan"
+
+#: importers/minetest.lua
+msgid "Unable to open `ipban.txt': "
+msgstr "Impossible d'ouvrir `ipban.txt' : "
+
+#: importers/minetest.lua
+msgid "Banned in `ipban.txt'"
+msgstr "Banni dans `ipban.txt'"
+
+#: importers/v1.lua
+msgid "Unable to open `players.iplist': "
+msgstr "Impossible d'ouvrir `players.iplist' : "
+
+#: importers/v1.lua
+msgid "Banned in `players.iplist'"
+msgstr "Banni dans `players.iplist'"
+
+#: importers/v2.lua
+msgid "Unable to open `players.iplist.v2': "
+msgstr "Impossible d'ouvrir `players.iplist.v2' : "
+
+#: init.lua
+msgid "No such entry"
+msgstr "Pas d'entrée"
+
+#: init.lua
+msgid "Player is whitelisted; remove from whitelist first"
+msgstr "Enlevez d'abord le joueur de la liste blanche"
+
+#: init.lua
+msgid "Already banned"
+msgstr "Déja banni"
+
+#: init.lua
+msgid "the end of time"
+msgstr "la fin des temps"
+
+#: init.lua
+#, lua-format
+msgid "Banned: Expires: %s, Reason: %s"
+msgstr "Banni : Expiration : %s, Motif : %s"
+
+#: init.lua
+#, lua-format
+msgid "Banned: Reason: %s"
+msgstr "Banni : Motif : %s"
+
+#: init.lua
+#, lua-format
+msgid "%s bans %s until %s for reason: %s"
+msgstr "%s a banni %s jusqu'à %s. Motif : %s"
+
+#: init.lua
+#, lua-format
+msgid "Banned Names/IPs: %s"
+msgstr "Noms/IP bannis : %s"
+
+#: init.lua
+msgid "Unbanned"
+msgstr "Dé-banni"
+
+#: init.lua
+#, lua-format
+msgid "%s unbans %s"
+msgstr "%s a dé-banni %s"
+
+#: init.lua
+#, lua-format
+msgid "Unbanned Names/IPs: %s"
+msgstr "Noms/IP dé-bannis : %s"
+
+#: init.lua
+#, lua-format
+msgid ", Expires: %s"
+msgstr ", Expiration : %s"
+
+#: init.lua
+#, lua-format
+msgid "User was last seen at %s"
+msgstr "Utilisateur vu pour la dernière fois le %s"
+
+#: init.lua
+msgid "XBan a player"
+msgstr "XBan un joueur"
+
+#: init.lua
+msgid "Usage: /xban <player> <reason>"
+msgstr "Utilisation : /xban <joueur> <motif>"
+
+#: init.lua
+#, lua-format
+msgid "Banned %s."
+msgstr "%s a été banni"
+
+#: init.lua
+msgid "XBan a player temporarily"
+msgstr "XBan un joueur temporairement"
+
+#: init.lua
+msgid "Usage: /xtempban <player> <time> <reason>"
+msgstr "Utilisation : /xtempban <joueur> <durée> <motif>"
+
+#: init.lua
+msgid "You must ban for at least 60 seconds."
+msgstr "Vous devez bannir pour 60 secondes au minimum"
+
+#: init.lua
+#, lua-format
+msgid "Banned %s until %s."
+msgstr "%s est banni jusqu'au %s"
+
+#: init.lua
+msgid "XUnBan a player"
+msgstr "XDé-Ban un joueur "
+
+#: init.lua
+msgid "Usage: /xunban <player_or_ip>"
+msgstr "Utilisation : /xunban <joueur_ou_IP>"
+
+#: init.lua
+#, lua-format
+msgid "Unbanned %s."
+msgstr "%s a été dé-banni."
+
+#: init.lua
+msgid "Show the ban records of a player"
+msgstr "Afficher les bannissements d'un joueur"
+
+#: init.lua
+msgid "Usage: /xban_record <player_or_ip>"
+msgstr "Utilisation : /xban_record <joueur_ou_IP>"
+
+#: init.lua
+msgid "Record listed."
+msgstr "Enregistrement ajouté à la liste."
+
+#: init.lua
+msgid "Manages the whitelist"
+msgstr "Gestion de la liste blanche."
+
+#: init.lua
+#, lua-format
+msgid "%s adds %s to whitelist"
+msgstr "%s a ajouté %s à la liste blanche"
+
+#: init.lua
+msgid "Added to whitelist: "
+msgstr "Ajouté à la liste blanche : "
+
+#: init.lua
+#, lua-format
+msgid "%s removes %s to whitelist"
+msgstr "%s a retiré %s de la liste blanche"
+
+#: init.lua
+msgid "Removed from whitelist: "
+msgstr "Retiré de la liste blanche : "
+
+#: init.lua
+msgid "Unknown"
+msgstr "Inconnu"
+
+#: init.lua
+msgid "No whitelist for: "
+msgstr "Pas sur la liste blanche : "
+
+#: init.lua
+#, lua-format
+msgid "Unable to save database: %s"
+msgstr "Impossible d'enregistrer la base de données : %s"
+
+#: init.lua
+#, lua-format
+msgid "Unable to load database: %s"
+msgstr "Impossible de lire la base de données : %s"
+
+#: init.lua
+msgid "Read failed"
+msgstr "Lecture impossible"
+
+#: init.lua
+msgid "Deserialization failed :"
+msgstr "Déserialisation impossible :"
