@@ -379,14 +379,13 @@ minetest.register_chatcommand("xban_cleanup", {
 	description = "Removes all non-banned entries from the xban db",
 	privs = { server=true },
 	func = function(name, params)
-		local rm_count = 0
+		local old_count = #db
 
 		local i = 1
 		while i <= #db do
 			if not db[i].banned then
 				-- not banned, remove from db
 				table.remove(db, i)
-				rm_count = rm_count + 1
 			else
 				-- banned, hold entry back
 				i = i + 1
@@ -396,7 +395,7 @@ minetest.register_chatcommand("xban_cleanup", {
 		-- save immediately
 		save_db()
 
-		return true, "removed " .. rm_count .. " entries, new db entry-count: " .. #db
+		return true, "Removed " .. (old_count - #db) .. " entries, new db entry-count: " .. #db
 	end,
 })
 
