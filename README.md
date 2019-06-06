@@ -104,3 +104,9 @@ the supported import plugins at the time of writing:
 * `v2`: Old format used by xban (`players.iplist.v2`).
 
 **Example:** `/xban_dbi minetest`
+
+### `xban_cleanup`
+
+Removes all non-banned entries from the xban db.
+
+**Usage:** `/xban_cleanup`
