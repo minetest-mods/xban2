@@ -40,6 +40,14 @@ local function parse_time(t) --> secs
 	return secs
 end
 
+local function concat_keys(t, sep)
+	local keys = {}
+	for k, _ in pairs(t) do
+		keys[#keys + 1] = k
+	end
+	return table.concat(keys, sep)
+end
+
 function xban.find_entry(player, create) --> entry, index
 	for index, e in ipairs(db) do
 		for name in pairs(e.names) do
@@ -111,7 +119,7 @@ function xban.ban_player(player, source, expires, reason) --> bool, err
 	end
 	ACTION("%s bans %s until %s for reason: %s", source, player,
 	  date, reason)
-	ACTION("Banned Names/IPs: %s", table.concat(e.names, ", "))
+	ACTION("Banned Names/IPs: %s", concat_keys(e.names, ", "))
 	return true
 end
 
@@ -131,7 +139,7 @@ function xban.unban_player(player, source) --> bool, err
 	e.expires = nil
 	e.time = nil
 	ACTION("%s unbans %s", source, player)
-	ACTION("Unbanned Names/IPs: %s", table.concat(e.names, ", "))
+	ACTION("Unbanned Names/IPs: %s", concat_keys(e.names, ", "))
 	return true
 end
 
