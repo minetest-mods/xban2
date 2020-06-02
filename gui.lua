@@ -61,7 +61,8 @@ local function make_fs(name)
 		"size[16,12]",
 		"label[0,-.1;Filter]",
 		"field[1.5,0;12.8,1;filter;;"..ESC(filter).."]",
-		"button[14,-.3;2,1;search;Search]",
+		"field_close_on_enter[filter;false]",
+		"button[14,-.3;2,1;search_submit;Search]",
 	}
 	local fsn = #fs
 	fsn=fsn+1 fs[fsn] = format("textlist[0,.8;4,9.3;player;%s;%d;0]",
@@ -122,7 +123,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		end
 		return
 	end
-	if fields.search then
+	if fields.search_submit or fields.filter then
 		local filter = fields.filter or ""
 		state.filter = filter
 		state.list = make_list(filter)
