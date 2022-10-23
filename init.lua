@@ -384,9 +384,22 @@ local function load_db()
 		else
 			local wwe = entry
 			wwe.expires = now + MAX_BAN_TIME
-			table.insert(tempbans, )
+			table.insert(tempbans, entry)
 		end
 	end
+	local i = 1
+	while i <= #db do
+		if not db[i].banned then
+			-- not banned, remove from db
+			table.remove(db, i)
+		else
+				-- banned, hold entry back
+			i = i + 1
+			if not db[i].expires then
+				db[i].expires = now + MAX_BAN_TIME
+		end
+	end
+	
 end
 
 minetest.register_chatcommand("xban_cleanup", {
