@@ -7,6 +7,7 @@ local db = { }
 local tempbans = { }
 
 local DEF_SAVE_INTERVAL = 300 -- 5 minutes
+local MAX_BAN_TIME = 31104000 -- 1 year  but  can be savely changed to higher or lower
 local DEF_DB_FILENAME = minetest.get_worldpath().."/xban.db"
 
 local DB_FILENAME = minetest.settings:get("xban.db_filename")
@@ -358,6 +359,7 @@ local function save_db()
 end
 
 local function load_db()
+	local now = os.time()
 	local f, e = io.open(DB_FILENAME, "rt")
 	if not f then
 		WARNING("Unable to load database: %s", e)
@@ -379,6 +381,10 @@ local function load_db()
 	for _, entry in ipairs(db) do
 		if entry.banned and entry.expires then
 			table.insert(tempbans, entry)
+		else
+			local wwe = entry
+			wwe.expires = now + MAX_BAN_TIME
+			table.insert(tempbans, )
 		end
 	end
 end
