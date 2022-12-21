@@ -416,3 +416,6 @@ minetest.after(1, check_temp_bans)
 
 dofile(xban.MP.."/dbimport.lua")
 dofile(xban.MP.."/gui.lua")
+
+-- print to log after mod was loaded successfully
+print ("[MOD] XBan2 loaded")
