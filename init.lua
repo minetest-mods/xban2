@@ -346,7 +346,7 @@ local function save_db()
 	local f, e = io.open(DB_FILENAME, "wt")
 	db.timestamp = os.time()
 	if f then
-		local ok, err = f:write(xban.serialize(db))
+		local ok, err = f:write(assert(xban.serialize_db(db)))
 		if not ok then
 			WARNING("Unable to save database: %s", err)
 		end
@@ -368,7 +368,7 @@ local function load_db()
 		WARNING("Unable to load database: %s", "Read failed")
 		return
 	end
-	local t, e2 = minetest.deserialize(cont)
+	local t, e2 = xban.deserialize_db(cont)
 	if not t then
 		WARNING("Unable to load database: %s",
 		  "Deserialization failed: "..(e2 or "unknown error"))
