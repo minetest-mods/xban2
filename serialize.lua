@@ -68,4 +68,3 @@ function xban.deserialize_db(s)
 
 	return res
 end
-
