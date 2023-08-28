@@ -343,18 +343,8 @@ end
 
 local function save_db()
 	minetest.after(SAVE_INTERVAL, save_db)
-	local f, e = io.open(DB_FILENAME, "wt")
 	db.timestamp = os.time()
-	if f then
-		local ok, err = f:write(assert(xban.serialize_db(db)))
-		if not ok then
-			WARNING("Unable to save database: %s", err)
-		end
-	else
-		WARNING("Unable to save database: %s", e)
-	end
-	if f then f:close() end
-	return
+	minetest.safe_file_write(DB_FILENAME, assert(xban.serialize_db(db)))
 end
 
 local function load_db()
