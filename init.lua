@@ -25,6 +25,7 @@ end
 
 local ACTION = make_logger("action")
 local WARNING = make_logger("warning")
+local ERROR = make_logger("error")
 
 local unit_to_secs = {
 	s = 1, m = 60, h = 3600,
@@ -344,7 +345,11 @@ end
 local function save_db()
 	minetest.after(SAVE_INTERVAL, save_db)
 	db.timestamp = os.time()
-	minetest.safe_file_write(DB_FILENAME, assert(xban.serialize_db(db)))
+	local contents = assert(xban.serialize_db(db))
+	local ok = minetest.safe_file_write(DB_FILENAME, contents)
+	if not ok then
+		ERROR("Unable to save database")
+	end
 end
 
 local function load_db()
