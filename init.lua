@@ -25,6 +25,7 @@ end
 
 local ACTION = make_logger("action")
 local WARNING = make_logger("warning")
+local ERROR = make_logger("error")
 
 local unit_to_secs = {
 	s = 1, m = 60, h = 3600,
@@ -343,18 +344,12 @@ end
 
 local function save_db()
 	minetest.after(SAVE_INTERVAL, save_db)
-	local f, e = io.open(DB_FILENAME, "wt")
 	db.timestamp = os.time()
-	if f then
-		local ok, err = f:write(xban.serialize(db))
-		if not ok then
-			WARNING("Unable to save database: %s", err)
-		end
-	else
-		WARNING("Unable to save database: %s", e)
+	local contents = assert(xban.serialize_db(db))
+	local ok = minetest.safe_file_write(DB_FILENAME, contents)
+	if not ok then
+		ERROR("Unable to save database")
 	end
-	if f then f:close() end
-	return
 end
 
 local function load_db()
@@ -368,7 +363,7 @@ local function load_db()
 		WARNING("Unable to load database: %s", "Read failed")
 		return
 	end
-	local t, e2 = minetest.deserialize(cont)
+	local t, e2 = xban.deserialize_db(cont)
 	if not t then
 		WARNING("Unable to load database: %s",
 		  "Deserialization failed: "..(e2 or "unknown error"))
