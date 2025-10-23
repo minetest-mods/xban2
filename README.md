@@ -6,7 +6,6 @@ This mod attempts to be an improvement to Minetest's ban system.
   addresses using the same name into a single record, and can ban/unban them as
   a single user.
 * Can ban offline players if you know their IP or username.
-* **Supports wildcard (subnet) bans using trailing `*` notation for IPv4 and IPv6 addresses.**
 * Holds a record of bans for each user, so moderators and administrators can
   consult it to know if a player is a repeat offender.
 * Does not modify the default ban database in any way (`ipban.txt').
