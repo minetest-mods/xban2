@@ -51,7 +51,6 @@ end
 
 local function ip_matches_pattern(ip, pattern)
     -- Simple wildcard: supports trailing "*"
-    if type(ip) ~= "string" or type(pattern) ~= "string" then return false end
     local star = pattern:find("%*")
     if star then
         return ip:sub(1, star - 1) == pattern:sub(1, star - 1)
@@ -76,7 +75,7 @@ function xban.find_entry(key, create)
         end
     end
     if create then
-        local e = { names = { [key]=true }, bans = {} }
+        local e = { names = { [key] = true }, bans = {} }
         table.insert(xban.db, e)
         return e, #xban.db
     end
