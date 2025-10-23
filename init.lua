@@ -81,6 +81,7 @@ function xban.find_entry(key, create)
     end
     return nil
 end
+
 function xban.get_info(player) --> ip_name_list, banned, last_record
 	local e = xban.find_entry(player)
 	if not e then
