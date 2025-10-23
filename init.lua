@@ -59,7 +59,7 @@ local function ip_matches_pattern(ip, pattern)
     return false
 end
 
--- PATCH find_entry: supports wildcard IP pattern (both IPv4 and IPv6)
+-- supports wildcard IP pattern (both IPv4 and IPv6)
 function xban.find_entry(key, create)
     -- exact match (player or IP)
     for i, e in ipairs(xban.db) do
