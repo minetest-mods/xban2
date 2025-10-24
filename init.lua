@@ -49,15 +49,6 @@ local function concat_keys(t, sep)
 	return table.concat(keys, sep)
 end
 
-local function ip_matches_pattern(ip, pattern)
-    -- Simple wildcard: supports trailing "*"
-    local star = pattern:find("%*")
-    if star then
-        return ip:sub(1, star - 1) == pattern:sub(1, star - 1)
-    end
-    return false
-end
-
 -- supports wildcard IP pattern (both IPv4 and IPv6)
 function xban.find_entry(key, create)
     -- exact match (player or IP)
@@ -68,10 +59,11 @@ function xban.find_entry(key, create)
     if key and key:find("[.:]") then
         for i, e in ipairs(xban.db) do
             for name in pairs(e.names) do
-                if name:find("%*") and ip_matches_pattern(key, name) then
-                    return e, i
-                end
-            end
+	            local wildcard_prefix = name:match("(.+[.:])%*$")
+	            if wildcard_prefix and key:sub(1, #wildcard_prefix) == wildcard_prefix then
+	                return e, i
+	            end
+	        end
         end
     end
     if create then
