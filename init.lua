@@ -49,25 +49,29 @@ local function concat_keys(t, sep)
 	return table.concat(keys, sep)
 end
 
-function xban.find_entry(player, create) --> entry, index
-	for index, e in ipairs(db) do
-		for name in pairs(e.names) do
-			if name == player then
-				return e, index
-			end
-		end
-	end
-	if create then
-		print(("Created new entry for `%s'"):format(player))
-		local e = {
-			names = { [player]=true },
-			banned = false,
-			record = { },
-		}
-		table.insert(db, e)
-		return e, #db
-	end
-	return nil
+-- supports wildcard IP pattern (both IPv4 and IPv6)
+function xban.find_entry(key, create)
+    -- exact match (player or IP)
+    for i, e in ipairs(xban.db) do
+        if e.names[key] then return e, i end
+    end
+    -- wildcard pattern match for IPs
+    if key and key:find("[.:]") then
+        for i, e in ipairs(xban.db) do
+            for name in pairs(e.names) do
+	            local wildcard_prefix = name:match("(.+[.:])%*$")
+	            if wildcard_prefix and key:sub(1, #wildcard_prefix) == wildcard_prefix then
+	                return e, i
+	            end
+	        end
+        end
+    end
+    if create then
+        local e = { names = { [key] = true }, bans = {} }
+        table.insert(xban.db, e)
+        return e, #xban.db
+    end
+    return nil
 end
 
 function xban.get_info(player) --> ip_name_list, banned, last_record
