@@ -67,7 +67,12 @@ function xban.find_entry(key, create)
         end
     end
     if create then
-        local e = { names = { [key] = true }, bans = {} }
+		print(("Created new entry for `%s'"):format(player))
+        local e = {
+			names = { [key] = true },
+			bans = {},
+			record = {} 
+		}
         table.insert(xban.db, e)
         return e, #xban.db
     end
