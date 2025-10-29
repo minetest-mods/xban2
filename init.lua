@@ -67,7 +67,11 @@ function xban.find_entry(key, create)
         end
     end
     if create then
-        local e = { names = { [key] = true }, bans = {} }
+        local e = {
+			names = { [player]=true },
+			banned = false,
+			record = { },
+		}
         table.insert(xban.db, e)
         return e, #xban.db
     end
@@ -197,35 +201,62 @@ function xban.get_record(player)
 end
 
 minetest.register_on_prejoinplayer(function(name, ip)
-	local wl = db.whitelist or { }
-	if wl[name] or wl[ip] then return end
-	local e = xban.find_entry(name) or xban.find_entry(ip)
-	if not e then return end
-	if e.banned then
-		local date = (e.expires and os.date("%c", e.expires)
-		  or "the end of time")
-		return ("Banned: Expires: %s, Reason: %s"):format(
-		  date, e.reason)
-	end
+    local wl = db.whitelist or {}
+    if wl[name] or wl[ip] then return end
+
+    -- One-time lookups for name and IP
+    local e_name = xban.find_entry(name)
+    local e_ip = ip and xban.find_entry(ip)
+
+    if (e_name and e_name.banned) or (e_ip and e_ip.banned) then
+        local date =
+            (e_name and e_name.banned and e_name.expires and os.date("%c", e_name.expires)) or
+            (e_ip and e_ip.banned and e_ip.expires and os.date("%c", e_ip.expires)) or "the end of time"
+        local reason =
+            (e_name and e_name.banned and e_name.reason) or
+            (e_ip and e_ip.banned and e_ip.reason) or "No reason given"
+        return ("Banned: Expires: %s, Reason: %s"):format(date, reason)
+    end
+
+    -- If you need to use the entry for additional logic below (e.g. creation, association),
+    -- pass the cached entries (e_name, e_ip) down rather than calling xban.find_entry again.
 end)
 
+
 minetest.register_on_joinplayer(function(player)
-	local name = player:get_player_name()
-	local e = xban.find_entry(name)
-	local ip = minetest.get_player_ip(name)
-	if not e then
-		if ip then
-			e = xban.find_entry(ip, true)
-		else
-			return
-		end
-	end
-	e.names[name] = true
-	if ip then
-		e.names[ip] = true
-	end
-	e.last_seen = os.time()
+    local name = player:get_player_name()
+    local ip = minetest.get_player_ip(name)
+    local wl = db.whitelist or {}
+    if wl[name] or wl[ip] then return end
+
+    -- Single lookups for name and IP
+    local e_name = xban.find_entry(name)
+    local e_ip = ip and xban.find_entry(ip)
+
+    if (e_name and e_name.banned) or (e_ip and e_ip.banned) then
+        local date =
+            (e_name and e_name.banned and e_name.expires and os.date("%c", e_name.expires)) or
+            (e_ip and e_ip.banned and e_ip.expires and os.date("%c", e_ip.expires)) or "the end of time"
+        local reason =
+            (e_name and e_name.banned and e_name.reason) or
+            (e_ip and e_ip.banned and e_ip.reason) or "No reason given"
+        minetest.kick_player(name, ("Banned: Expires: %s, Reason: %s"):format(date, reason))
+        return
+    end
+
+    -- Association logic below:
+    local e = e_name or (ip and e_ip)
+    if not e then
+        e = ip and xban.find_entry(ip, true)
+        if not e then return end
+    end
+    e.names[name] = true
+    if ip then
+        e.names[ip] = true
+    end
+    e.last_seen = os.time()
 end)
+
 
 minetest.register_chatcommand("xban", {
 	description = "XBan a player",
