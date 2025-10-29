@@ -208,24 +208,58 @@ minetest.register_on_prejoinplayer(function(name, ip)
 		  date, e.reason)
 	end
 end)
+minetest.register_on_prejoinplayer(function(name, ip)
+    local wl = db.whitelist or {}
+    if wl[name] or wl[ip] then return end
+
+    local e_name = xban.find_entry(name)
+    local e_ip = ip and xban.find_entry(ip)
+
+    if (e_name and e_name.banned) or (e_ip and e_ip.banned) then
+        local date =
+            (e_name and e_name.banned and e_name.expires and os.date("%c", e_name.expires)) or
+            (e_ip and e_ip.banned and e_ip.expires and os.date("%c", e_ip.expires)) or "the end of time"
+        local reason =
+            (e_name and e_name.banned and e_name.reason) or
+            (e_ip and e_ip.banned and e_ip.reason) or "No reason given"
+
+        return ("Banned: Expires: %s, Reason: %s"):format(date, reason)
+    end
+end)
 
 minetest.register_on_joinplayer(function(player)
-	local name = player:get_player_name()
-	local e = xban.find_entry(name)
-	local ip = minetest.get_player_ip(name)
-	if not e then
-		if ip then
-			e = xban.find_entry(ip, true)
-		else
-			return
-		end
-	end
-	e.names[name] = true
-	if ip then
-		e.names[ip] = true
-	end
-	e.last_seen = os.time()
+    local name = player:get_player_name()
+    local ip = minetest.get_player_ip(name)
+
+    local e_name = xban.find_entry(name)
+    local e_ip = ip and xban.find_entry(ip)
+
+	if (e_name and e_name.banned) or (e_ip and e_ip.banned) then
+        local date =
+            (e_name and e_name.banned and e_name.expires and os.date("%c", e_name.expires)) or
+            (e_ip and e_ip.banned and e_ip.expires and os.date("%c", e_ip.expires)) or "the end of time"
+        local reason =
+            (e_name and e_name.banned and e_name.reason) or
+            (e_ip and e_ip.banned and e_ip.reason) or "No reason given"
+
+        local msg = ("Banned: Expires: %s, Reason: %s"):format(date, reason)
+        minetest.kick_player(name, msg)
+        return
+    end
+
+	local e = e_name
+    if not e and ip then
+        e = xban.find_entry(ip, true)
+    elseif not e then
+        return
+    end
+    e.names[name] = true
+    if ip then
+        e.names[ip] = true
+    end
+    e.last_seen = os.time()
 end)
+
 
 minetest.register_chatcommand("xban", {
 	description = "XBan a player",
