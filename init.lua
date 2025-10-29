@@ -1,38 +1,28 @@
-
 xban = { MP = minetest.get_modpath(minetest.get_current_modname()) }
-
 dofile(xban.MP.."/serialize.lua")
-
 local db = { }
 local tempbans = { }
-
 local DEF_SAVE_INTERVAL = 300 -- 5 minutes
 local DEF_DB_FILENAME = minetest.get_worldpath().."/xban.db"
-
 local DB_FILENAME = minetest.settings:get("xban.db_filename")
 local SAVE_INTERVAL = tonumber(
   minetest.settings:get("xban.db_save_interval")) or DEF_SAVE_INTERVAL
-
 if (not DB_FILENAME) or (DB_FILENAME == "") then
 	DB_FILENAME = DEF_DB_FILENAME
 end
-
 local function make_logger(level)
 	return function(text, ...)
 		minetest.log(level, "[xban] "..text:format(...))
 	end
 end
-
 local ACTION = make_logger("action")
 local WARNING = make_logger("warning")
 local ERROR = make_logger("error")
-
 local unit_to_secs = {
 	s = 1, m = 60, h = 3600,
 	D = 86400, W = 604800, M = 2592000, Y = 31104000,
 	[""] = 1,
 }
-
 local function parse_time(t) --> secs
 	local secs = 0
 	for num, unit in t:gmatch("(%d+)([smhDWMY]?)") do
@@ -40,7 +30,6 @@ local function parse_time(t) --> secs
 	end
 	return secs
 end
-
 local function concat_keys(t, sep)
 	local keys = {}
 	for k, _ in pairs(t) do
@@ -48,7 +37,6 @@ local function concat_keys(t, sep)
 	end
 	return table.concat(keys, sep)
 end
-
 -- supports wildcard IP pattern (both IPv4 and IPv6)
 function xban.find_entry(key, create)
     -- exact match (player or IP)
@@ -78,7 +66,6 @@ function xban.find_entry(key, create)
     end
     return nil
 end
-
 function xban.get_info(player) --> ip_name_list, banned, last_record
 	local e = xban.find_entry(player)
 	if not e then
@@ -86,7 +73,6 @@ function xban.get_info(player) --> ip_name_list, banned, last_record
 	end
 	return e.names, e.banned, e.record[#e.record]
 end
-
 function xban.ban_player(player, source, expires, reason) --> bool, err
 	if xban.get_whitelist(player) then
 		return nil, "Player is whitelisted; remove from whitelist first"
@@ -132,7 +118,6 @@ function xban.ban_player(player, source, expires, reason) --> bool, err
 	ACTION("Banned Names/IPs: %s", concat_keys(e.names, ", "))
 	return true
 end
-
 function xban.unban_player(player, source) --> bool, err
 	local e = xban.find_entry(player)
 	if not e then
@@ -152,17 +137,14 @@ function xban.unban_player(player, source) --> bool, err
 	ACTION("Unbanned Names/IPs: %s", concat_keys(e.names, ", "))
 	return true
 end
-
 function xban.get_whitelist(name_or_ip)
 	return db.whitelist and db.whitelist[name_or_ip]
 end
-
 function xban.remove_whitelist(name_or_ip)
 	if db.whitelist then
 		db.whitelist[name_or_ip] = nil
 	end
 end
-
 function xban.add_whitelist(name_or_ip, source)
 	local wl = db.whitelist
 	if not wl then
@@ -174,7 +156,6 @@ function xban.add_whitelist(name_or_ip, source)
 	}
 	return true
 end
-
 function xban.get_record(player)
 	local e = xban.find_entry(player)
 	if not e then
@@ -200,24 +181,34 @@ function xban.get_record(player)
 	end
 	return record, last_pos
 end
-
+-- Updated prejoin: whitelist OR logic, check name and IP independently
 minetest.register_on_prejoinplayer(function(name, ip)
 	local wl = db.whitelist or { }
+	-- Allow if either name OR IP is whitelisted
 	if wl[name] or wl[ip] then return end
-	local e = xban.find_entry(name) or xban.find_entry(ip)
+	-- Check bans independently on name and IP
+	local e_name = xban.find_entry(name)
+	local e_ip = ip and xban.find_entry(ip) or nil
+	local e = e_name or e_ip
 	if not e then return end
-	if e.banned then
+	if e and e.banned then
 		local date = (e.expires and os.date("%c", e.expires)
 		  or "the end of time")
 		return ("Banned: Expires: %s, Reason: %s"):format(
 		  date, e.reason)
 	end
 end)
-
+-- Updated joinplayer: skip all processing for whitelisted entities and check name/IP separately
 minetest.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
-	local e = xban.find_entry(name)
 	local ip = minetest.get_player_ip(name)
+	local wl = db.whitelist or { }
+	-- Skip all processing if whitelisted by name or IP
+	if wl[name] or (ip and wl[ip]) then
+		return
+	end
+	-- Process normally
+	local e = xban.find_entry(name)
 	if not e then
 		if ip then
 			e = xban.find_entry(ip, true)
@@ -231,29 +222,27 @@ minetest.register_on_joinplayer(function(player)
 	end
 	e.last_seen = os.time()
 end)
-
 minetest.register_chatcommand("xban", {
 	description = "XBan a player",
-	params = "<player> <reason>",
+	params = " <reason>",
 	privs = { ban=true },
 	func = function(name, params)
 		local plname, reason = params:match("(%S+)%s+(.+)")
 		if not (plname and reason) then
-			return false, "Usage: /xban <player> <reason>"
+			return false, "Usage: /xban  <reason>"
 		end
 		local ok, e = xban.ban_player(plname, name, nil, reason)
 		return ok, ok and ("Banned %s."):format(plname) or e
 	end,
 })
-
 minetest.register_chatcommand("xtempban", {
 	description = "XBan a player temporarily",
-	params = "<player> <time> <reason>",
+	params = "  <reason>",
 	privs = { ban=true },
 	func = function(name, params)
 		local plname, time, reason = params:match("(%S+)%s+(%S+)%s+(.+)")
 		if not (plname and time and reason) then
-			return false, "Usage: /xtempban <player> <time> <reason>"
+			return false, "Usage: /xtempban   <reason>"
 		end
 		time = parse_time(time)
 		if time < 60 then
@@ -265,7 +254,6 @@ minetest.register_chatcommand("xtempban", {
 				plname, os.date("%c", expires)) or e)
 	end,
 })
-
 minetest.register_chatcommand("xunban", {
 	description = "XUnBan a player",
 	params = "<player_or_ip>",
@@ -281,7 +269,6 @@ minetest.register_chatcommand("xunban", {
 		return ok, ok and ("Unbanned %s."):format(plname) or e
 	end,
 })
-
 minetest.register_chatcommand("xban_record", {
 	description = "Show the ban records of a player",
 	params = "<player_or_ip>",
@@ -306,33 +293,6 @@ minetest.register_chatcommand("xban_record", {
 		return true, "Record listed."
 	end,
 })
-
-minetest.register_chatcommand("xban_wl", {
-	description = "Manages the whitelist",
-	params = "(add|del|get) <name_or_ip>",
-	privs = { ban=true },
-	func = function(name, params)
-		local cmd, plname = params:match("%s*(%S+)%s*(%S+)")
-		if cmd == "add" then
-			xban.add_whitelist(plname, name)
-			ACTION("%s adds %s to whitelist", name, plname)
-			return true, "Added to whitelist: "..plname
-		elseif cmd == "del" then
-			xban.remove_whitelist(plname)
-			ACTION("%s removes %s to whitelist", name, plname)
-			return true, "Removed from whitelist: "..plname
-		elseif cmd == "get" then
-			local e = xban.get_whitelist(plname)
-			if e then
-				return true, "Source: "..(e.source or "Unknown")
-			else
-				return true, "No whitelist for: "..plname
-			end
-		end
-	end,
-})
-
-
 local function check_temp_bans()
 	minetest.after(60, check_temp_bans)
 	local to_rm = { }
@@ -350,7 +310,6 @@ local function check_temp_bans()
 		table.remove(tempbans, i)
 	end
 end
-
 local function save_db()
 	minetest.after(SAVE_INTERVAL, save_db)
 	db.timestamp = os.time()
@@ -360,7 +319,6 @@ local function save_db()
 		ERROR("Unable to save database")
 	end
 end
-
 local function load_db()
 	local f, e = io.open(DB_FILENAME, "rt")
 	if not f then
@@ -386,13 +344,11 @@ local function load_db()
 		end
 	end
 end
-
 minetest.register_chatcommand("xban_cleanup", {
 	description = "Removes all non-banned entries from the xban db",
 	privs = { server=true },
 	func = function(name, params)
 		local old_count = #db
-
 		local i = 1
 		while i <= #db do
 			if not db[i].banned then
@@ -403,20 +359,15 @@ minetest.register_chatcommand("xban_cleanup", {
 				i = i + 1
 			end
 		end
-
 		-- save immediately
 		save_db()
-
 		return true, "Removed " .. (old_count - #db) .. " entries, new db entry-count: " .. #db
 	end,
 })
-
 minetest.register_on_shutdown(save_db)
 minetest.after(SAVE_INTERVAL, save_db)
 load_db()
 xban.db = db
-
 minetest.after(1, check_temp_bans)
-
 dofile(xban.MP.."/dbimport.lua")
 dofile(xban.MP.."/gui.lua")
