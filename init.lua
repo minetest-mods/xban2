@@ -68,7 +68,7 @@ function xban.find_entry(key, create)
     end
     if create then
         local e = {
-			names = { [player]=true },
+			names = { [key]=true },
 			banned = false,
 			record = { },
 		}
