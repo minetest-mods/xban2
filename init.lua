@@ -216,8 +216,7 @@ minetest.register_on_prejoinplayer(function(name, ip)
 	end
 end)
 
-minetest.register_on_joinplayer(
-function(player)
+minetest.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
 	local e = xban.find_entry(name)
 	local ip = minetest.get_player_ip(name)
@@ -233,8 +232,7 @@ function(player)
 		e.names[ip] = true
 	end
 	e.last_seen = os.time()
-end
-)
+end)
 
 minetest.register_chatcommand("xban", {
 	description = "XBan a player",
