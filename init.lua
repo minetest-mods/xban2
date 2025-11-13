@@ -51,31 +51,31 @@ end
 
 -- supports wildcard IP pattern (both IPv4 and IPv6)
 function xban.find_entry(key, create)
-    -- exact match (player or IP)
-    for i, e in ipairs(xban.db) do
-        if e.names[key] then return e, i end
-    end
-    -- wildcard pattern match for IPs
-    if key and key:find("[.:]") then
-        for i, e in ipairs(xban.db) do
-            for name in pairs(e.names) do
-	            local wildcard_prefix = name:match("(.+[.:])%*$")
-	            if wildcard_prefix and key:sub(1, #wildcard_prefix) == wildcard_prefix then
-	                return e, i
-	            end
-	        end
-        end
-    end
-    if create then
-        local e = {
+	-- exact match (player or IP)
+	for i, e in ipairs(xban.db) do
+		if e.names[key] then return e, i end
+	end
+	-- wildcard pattern match for IPs
+	if key and key:find("[.:]") then
+		for i, e in ipairs(xban.db) do
+			for name in pairs(e.names) do
+				local wildcard_prefix = name:match("(.+[.:])%*$")
+				if wildcard_prefix and key:sub(1, #wildcard_prefix) == wildcard_prefix then
+					return e, i
+				end
+			end
+		end
+	end
+	if create then
+		local e = {
 			names = { [key]=true },
 			banned = false,
 			record = { },
 		}
-        table.insert(xban.db, e)
-        return e, #xban.db
-    end
-    return nil
+		table.insert(xban.db, e)
+		return e, #xban.db
+	end
+	return nil
 end
 
 function xban.get_info(player) --> ip_name_list, banned, last_record
@@ -201,39 +201,39 @@ function xban.get_record(player)
 end
 
 minetest.register_on_prejoinplayer(function(name, ip)
-    local wl = db.whitelist or {}
-    if wl[name] or wl[ip] then return end
+	local wl = db.whitelist or {}
+	if wl[name] or wl[ip] then return end
 
-    local e = xban.find_entry(name)
-    if not e or not e.banned then
-        e = ip and xban.find_entry(ip)
-    end
+	local e = xban.find_entry(name)
+	if not e or not e.banned then
+		e = ip and xban.find_entry(ip)
+	end
 
-    if e and e.banned then
-        local date = e.expires and os.date("%c", e.expires) or "the end of time"
-        local reason = e.reason or "No reason given"
-        return ("Banned: Expires: %s, Reason: %s"):format(date, reason)
-    end
+	if e and e.banned then
+		local date = e.expires and os.date("%c", e.expires) or "the end of time"
+		local reason = e.reason or "No reason given"
+		return ("Banned: Expires: %s, Reason: %s"):format(date, reason)
+	end
 end)
 
 minetest.register_on_joinplayer(
-    function(player)
-        local name = player:get_player_name()
-        local e = xban.find_entry(name)
-        local ip = minetest.get_player_ip(name)
-        if not e then
-            if ip then
-                e = xban.find_entry(ip, true)
-            else
-                return
-            end
-        end
-        e.names[name] = true
-        if ip then
-            e.names[ip] = true
-        end
-        e.last_seen = os.time()
-    end
+function(player)
+	local name = player:get_player_name()
+	local e = xban.find_entry(name)
+	local ip = minetest.get_player_ip(name)
+	if not e then
+		if ip then
+			e = xban.find_entry(ip, true)
+		else
+			return
+		end
+	end
+	e.names[name] = true
+	if ip then
+		e.names[ip] = true
+	end
+	e.last_seen = os.time()
+end
 )
 
 minetest.register_chatcommand("xban", {
