@@ -364,7 +364,7 @@ local function save_db()
 end
 
 local function load_db()
-	local f, e = io.open(DB_FILENAME, "rt")
+	local f, e = io.open(DB_FILENAME, "r")
 	if not f then
 		WARNING("Unable to load database: %s", e)
 		return
