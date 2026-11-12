@@ -1,15 +1,27 @@
+The database is stored as JSON in `<world>/xban.db' (older versions used a
+Lua script returning a table; such files are still loaded).
 
-Database is a regular Lua script that returns a table.
+The top level has the following named fields:
 
-Table has a single named field `timestamp' containing the time_t the
-DB was last saved. It's not used in the mod and is only meant for
-external use (I don't find filesystem timestamps too reliable).
+	timestamp = 12341234,   -- time_t the DB was last saved. It's not used in
+	                        -- the mod and is only meant for external use (I
+	                        -- don't find filesystem timestamps too reliable).
+	next_entry_id = 2439,   -- Next ID handed out to a new entry
+	next_record_id = 110,   -- Next ID handed out to a new record
+	whitelist = {           -- Names/IPs that may join despite a ban
+		["foo"] = { source = "qwerty" },
+	},
 
-Next is a simple array (number indices) of entries.
+IDs are never reused, not even after an entry was removed with
+`/xban_cleanup'.
+
+Next is a simple array (number indices) of entries. In the JSON file this
+array is stored in the field `entries'.
 
 Each entry contains following fields:
 
 [1] = {
+	id = 42,            -- Fixed ID of the entry
 	-- Names/IPs associated with this entry
 	names = {
 		["foo"] = true,
@@ -17,26 +29,43 @@ Each entry contains following fields:
 		["123.45.67.89"] = true,
 	},
 	banned = true,      -- Whether this user is banned
-	                    -- Other fields do not apply if false
+	                    -- The next three fields do not apply if false
 	time = 12341234,    -- Time of last ban (*1)
-	expires = 43214321  -- Time at which ban expires (*2)
+	expires = 43214321  -- Time at which ban expires (*1)
 	                    -- If nil, permanent ban
 	reason = "asdf",    -- Reason for ban
-	source = "qwerty",  -- Source of ban (*2)
-	record = {
+	last_seen = 12341234, -- Last time a name/IP of this entry joined
+	last_pos = { x = 1.5, y = 2, z = -3.25 }, -- Position at the last ban,
+	                    -- only if the player was online (superseded by
+	                    -- `pos' in the record)
+	source = "qwerty",  -- Only set by the importers (*2)
+	record = {          -- History, oldest first
 		[1] = {
-			source = "asdf",
+			id = 108,           -- Fixed ID of the record
+			action = "ban",
+			target = "foo",     -- Name/IP given to the ban command
+			source = "asdf",    -- Who banned (*2)
 			reason = "qwerty",
 			time = 12341234,
-			expires = 43214321,
+			expires = 43214321, -- Only for temporary bans
+			pos = { x = 1, y = 2, z = -3 }, -- Rounded position of the
+			                    -- target, only if it was online
 		},
-		[1] = {
-			source = "asdf",
-			reason = "Unbanned",  -- When unbanned
-			time = 12341234,
+		[2] = {
+			id = 109,
+			action = "unban",
+			target = "foo",     -- nil when the ban expired
+			source = "asdf",    -- "xban:expired" when the ban expired
+			reason = "Unbanned",
+			time = 12341234,    -- When the ban expired, if it expired
 		},
 	},
 }
+
+Databases written before IDs existed are converted when they are loaded:
+entries and records get IDs (records in chronological order), `action' is
+derived from the reason ("Unbanned" means "unban"), and `target' stays empty.
+The unconverted file is kept as `<world>/xban.db.before-ids'.
 
 Notes:
 (*1)  All times are expressed in whatever unit `os.time()' uses

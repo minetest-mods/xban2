@@ -43,8 +43,12 @@ local function get_record_simple(name)
 	end
 	local record = { }
 	for _, rec in ipairs(e.record) do
+		local head = ("#%s %s"):format(rec.id or "?", rec.action or "ban")
+		if rec.target then
+			head = head.." "..rec.target
+		end
 		local msg = (os.date("%Y-%m-%d %H:%M:%S", rec.time).." | "
-				..(rec.reason or "No reason given."))
+				..head.." | "..(rec.reason or "No reason given."))
 		table.insert(record, msg)
 	end
 	return record, e.record
@@ -79,8 +83,12 @@ local function make_fs(name)
 					table.concat(record, ","), ei)
 			local rec = e[ei]
 			if rec then
+				-- ID, action and target share a line, the label has room
+				-- for about four lines
 				fsn=fsn+1 fs[fsn] = format("label[0,10.3;%s]",
-						ESC("Source: "..(rec.source or "<none>")
+						ESC("Record: #"..(rec.id or "?").." "..(rec.action or "ban")
+							..", Target: "..(rec.target or "<unknown>")
+							.."\nSource: "..(rec.source or "<none>")
 							.."\nTime: "..os.date("%c", rec.time)
 							.."\n"..(rec.expires and
 								os.date("%c", rec.expires) or "")),
