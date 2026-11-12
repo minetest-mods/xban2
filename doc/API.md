@@ -31,6 +31,14 @@ Unban a player and all of his/her alternative names and IPs.
 * 2: Mods using the xban API are advised to use the `"modname:source"`
 format for `source` (for example: `"anticheat:main"`).
 
+### expire_bans
+
+`xban.expire_bans()`
+
+Lifts all temporary bans whose time is up and adds an unban record with the
+source `xban:expired` to each of them. Returns the number of lifted bans. The
+mod calls it once a minute; other mods can hook it to react to expired bans.
+
 ### IP blacklist
 
 * `xban.get_ip_blacklist()` - Table `{ [pattern] = { source, time, reason } }`.

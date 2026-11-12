@@ -614,9 +614,13 @@ minetest.register_chatcommand("xban_split", {
 	end,
 })
 
-local function check_temp_bans()
-	minetest.after(60, check_temp_bans)
+-- Lifts temporary bans whose time is up. Returns the number of lifted bans.
+-- Public so other mods can react to it (e.g. dashboard_sync hooks it to send
+-- the change); check_temp_bans calls it through the xban table for that
+-- reason.
+function xban.expire_bans()
 	local now = os.time()
+	local expired = 0
 	-- backwards, so table.remove does not skip the following element
 	for i = #tempbans, 1, -1 do
 		local e = tempbans[i]
@@ -638,8 +642,15 @@ local function check_temp_bans()
 			e.reason = nil
 			e.time = nil
 			table.remove(tempbans, i)
+			expired = expired + 1
 		end
 	end
+	return expired
+end
+
+local function check_temp_bans()
+	minetest.after(60, check_temp_bans)
+	xban.expire_bans()
 end
 
 local function write_db()
