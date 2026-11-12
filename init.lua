@@ -2,6 +2,8 @@
 xban = { MP = minetest.get_modpath(minetest.get_current_modname()) }
 
 dofile(xban.MP.."/serialize.lua")
+dofile(xban.MP.."/blacklist.lua")
+dofile(xban.MP.."/ratelimit.lua")
 
 local db = { }
 local tempbans = { }
@@ -228,6 +230,120 @@ function xban.unban_player(player, source) --> bool, err
 	return true
 end
 
+local function is_ip(name)
+	return name:find("[.:]") ~= nil
+end
+
+-- Removes every IP matching `pattern` from the names of all entries.
+-- With dry_run nothing is changed. Returns a list of
+-- { entry = e, removed = { ip, ... } } or nil, error.
+function xban.purge_ip(pattern, source, dry_run)
+	pattern = xban.normalize_ip(pattern or "")
+	if not xban.valid_ip_pattern(pattern) then
+		return nil, "Invalid IP address or pattern: "..pattern
+	end
+	local affected = { }
+	for _, e in ipairs(db) do
+		local removed = { }
+		for name in pairs(e.names) do
+			if is_ip(name) and xban.ip_matches(pattern, name) then
+				table.insert(removed, name)
+			end
+		end
+		if #removed > 0 then
+			table.sort(removed)
+			table.insert(affected, { entry = e, removed = removed })
+		end
+	end
+	if not dry_run then
+		for _, a in ipairs(affected) do
+			for _, ip in ipairs(a.removed) do
+				a.entry.names[ip] = nil
+			end
+			ACTION("%s purges %s from entry #%s (remaining: %s)", source or "?",
+			  table.concat(a.removed, ", "), a.entry.id,
+			  concat_keys(a.entry.names, ", "))
+		end
+	end
+	return affected
+end
+
+-- Moves the player name `name` out of its entry into a new entry of its own,
+-- together with the records targeting it. If the active ban of the entry
+-- targets `name`, the ban moves along and the old entry is no longer banned.
+-- Returns new_entry, ban_moved or nil, error.
+function xban.split_entry(name, source)
+	if not name or name == "" or is_ip(name) then
+		return nil, "Only player names can be split off (use /xban_purge_ip for IPs)"
+	end
+	local found = { }
+	for _, e in ipairs(db) do
+		if e.names[name] then
+			table.insert(found, e)
+		end
+	end
+	if #found == 0 then
+		return nil, "No entry contains "..name
+	elseif #found > 1 then
+		local ids = { }
+		for _, e in ipairs(found) do table.insert(ids, "#"..e.id) end
+		return nil, ("%s is in several entries (%s)"):format(name,
+		  table.concat(ids, ", "))
+	end
+	local e = found[1]
+	if next(e.names, next(e.names)) == nil then
+		return nil, name.." is the only name/IP of its entry"
+	end
+
+	-- the record that started the current ban
+	local active
+	if e.banned then
+		for i = #e.record, 1, -1 do
+			if e.record[i].action == "ban" then
+				active = e.record[i]
+				break
+			end
+		end
+	end
+
+	local new = {
+		id = next_id("next_entry_id"),
+		names = { [name] = true },
+		banned = false,
+		record = { },
+	}
+	local kept = { }
+	for _, rec in ipairs(e.record) do
+		table.insert(rec.target == name and new.record or kept, rec)
+	end
+	e.record = kept
+	e.names[name] = nil
+
+	local ban_moved = active ~= nil and active.target == name
+	if ban_moved then
+		new.banned, new.reason, new.time, new.expires =
+		  true, e.reason, e.time, e.expires
+		new.last_pos, e.last_pos = e.last_pos, nil
+		e.banned, e.reason, e.time, e.expires = false, nil, nil, nil
+		add_record(e, {
+			action = "unban",
+			target = name,
+			source = source,
+			time = os.time(),
+			reason = ("Split off %s, the ban moved to entry #%d"):format(
+			  name, new.id),
+		})
+		if new.expires then
+			table.insert(tempbans, new)
+		end
+	end
+	table.insert(db, new)
+	ACTION("%s splits %s off entry #%s into entry #%d (%d records moved%s)",
+	  source or "?", name, e.id, new.id, #new.record,
+	  ban_moved and ", ban moved" or "")
+	return new, ban_moved
+end
+
 function xban.get_whitelist(name_or_ip)
 	return db.whitelist and db.whitelist[name_or_ip]
 end
@@ -283,6 +399,15 @@ function xban.get_record(player)
 end
 
 minetest.register_on_prejoinplayer(function(name, ip)
+	-- the IP blacklist and the rate limit apply to everyone, whitelisted or not
+	if ip then
+		local denial = xban.ip_blacklist_denial(ip, name)
+			or xban.auth_block_denial(ip, name)
+		if denial then
+			return denial
+		end
+	end
+
 	local wl = db.whitelist or {}
 	if wl[name] or wl[ip] then return end
 
@@ -416,6 +541,78 @@ minetest.register_chatcommand("xban_wl", {
 	end,
 })
 
+
+-- "#12 [banned] Peter, Paul (+3 more)": an entry with its player names
+local function describe_entry(e)
+	local names = { }
+	for name in pairs(e.names) do
+		if not is_ip(name) then
+			table.insert(names, name)
+		end
+	end
+	table.sort(names)
+	local more = #names > 8 and (" (+%d more)"):format(#names - 8) or ""
+	for i = #names, 9, -1 do
+		names[i] = nil
+	end
+	return ("#%s%s %s%s"):format(e.id, e.banned and " [banned]" or "",
+	  #names > 0 and table.concat(names, ", ") or "<no names>", more)
+end
+
+local PURGE_LIST_MAX = 30
+
+minetest.register_chatcommand("xban_purge_ip", {
+	description = "Removes an IP (or pattern) from all xban entries",
+	params = "<ip> [confirm]",
+	privs = { ban=true },
+	func = function(name, params)
+		local ip, confirm = params:match("^%s*(%S+)%s*(%S*)")
+		if not ip then
+			return false, "Usage: /xban_purge_ip <ip> [confirm]"
+		end
+		local dry_run = confirm ~= "confirm"
+		local affected, err = xban.purge_ip(ip, name, dry_run)
+		if not affected then
+			return false, err
+		elseif #affected == 0 then
+			return true, "No entry contains "..xban.normalize_ip(ip).."."
+		end
+		for i, a in ipairs(affected) do
+			if i > PURGE_LIST_MAX then
+				minetest.chat_send_player(name, ("[xban] ... and %d more entries")
+				  :format(#affected - PURGE_LIST_MAX))
+				break
+			end
+			minetest.chat_send_player(name, ("[xban] %s: %s"):format(
+			  describe_entry(a.entry), table.concat(a.removed, ", ")))
+		end
+		if dry_run then
+			return true, ("%d entries contain the IP. Run /xban_purge_ip %s confirm to remove it.")
+			  :format(#affected, ip)
+		end
+		return true, ("Removed the IP from %d entries."):format(#affected)
+	end,
+})
+
+minetest.register_chatcommand("xban_split", {
+	description = "Moves a player name out of its xban entry into a new one",
+	params = "<player>",
+	privs = { ban=true },
+	func = function(name, params)
+		local plname = params:match("^%s*(%S+)")
+		if not plname then
+			return false, "Usage: /xban_split <player>"
+		end
+		local new, ban_moved = xban.split_entry(plname, name)
+		if not new then
+			return false, ban_moved
+		end
+		return true, ("Moved %s into the new entry #%d with %d records.%s"):format(
+		  plname, new.id, #new.record, ban_moved
+		  and " The ban moved along, the old entry is no longer banned."
+		  or (new.banned and "" or " The new entry is not banned."))
+	end,
+})
 
 local function check_temp_bans()
 	minetest.after(60, check_temp_bans)

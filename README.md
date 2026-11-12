@@ -118,6 +118,44 @@ player is in the whitelist, and prints the status to chat.
 ### `xban_gui`
 Shows a form to consult the database interactively.
 
+### `xban_ipbl`
+Manages the IP blacklist.
+
+**Usage:** `/xban_ipbl add <ip> [note] | del <ip> | check <ip> | list`
+
+Connections from a blacklisted IP are refused before the password is checked,
+for every account, including whitelisted ones. Connected players with a
+matching IP are kicked when the IP is added. Patterns with a trailing `*` work
+as for wildcard bans, and `::ffff:1.2.3.4` counts as `1.2.3.4`. The blacklist
+is stored in the mod storage, separately from the ban entries.
+
+By default the IP is told that the password was wrong, so the person behind it
+does not think of switching to another IP. See `settingtypes.txt`
+(`xban.ip_blacklist_message`, `xban.wrong_password_text`).
+
+**Example:** `/xban_ipbl add 203.0.113.42 Brute force`
+
+### `xban_purge_ip`
+Removes an IP (or pattern) from the names of all entries, for example an IP
+that linked unrelated players. Without `confirm` it only lists the entries
+that contain the IP.
+
+**Usage:** `/xban_purge_ip <ip> [confirm]`
+
+### `xban_split`
+Moves a player name out of its entry into a new entry of its own, together
+with the records whose target is that name. If the current ban of the entry
+targets that name, the ban moves along and the old entry is no longer banned.
+
+**Usage:** `/xban_split <player>`
+
+### `xban_authblock`
+Lists or lifts the IP blocks of the login rate limit. After 5 failed logins
+from one IP within 10 minutes, the IP is blocked for an hour (see
+`settingtypes.txt`). Blocks are kept in memory and end with a restart.
+
+**Usage:** `/xban_authblock list | clear <ip>`
+
 **Usage:** `/xban_gui`
 
 ## Administrator commands

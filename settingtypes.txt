@@ -1,0 +1,36 @@
+# Database file. Empty: <world>/xban.db
+xban.db_filename (Database file) string
+
+# Seconds between two saves of the database
+xban.db_save_interval (Save interval) int 300 10
+
+[IP blacklist]
+
+# What a blacklisted IP is told when it connects.
+# wrong_password: pretend the password was wrong (see xban.wrong_password_text),
+# banned: say that the IP is blocked.
+xban.ip_blacklist_message (Message for blacklisted IPs) enum wrong_password wrong_password,banned
+
+# Text sent to blacklisted IPs with the message "wrong_password". Clients show
+# it as "Access denied. Reason: <text>" without translating it, while they
+# translate the real message. On a German server "Falsches Passwort" looks
+# exactly like the real message on German clients.
+xban.wrong_password_text (Text for "wrong password") string Invalid password
+
+# With the message "wrong_password": text for players who are online when their
+# IP is added to the blacklist. They are disconnected without the "Kicked: "
+# prefix, so the default looks like a real shutdown. If the server uses its own
+# shutdown message (setting kick_msg_shutdown), use the same text here.
+xban.ip_blacklist_kick_text (Text for disconnected players) string Server shutting down.
+
+[Login rate limit]
+
+# Failed logins from one IP within xban.auth_fail_window that block the IP.
+# 0 disables the rate limit.
+xban.auth_fail_max (Failed logins before blocking) int 5 0
+
+# Seconds in which the failed logins are counted
+xban.auth_fail_window (Counting window) int 600 1
+
+# Seconds an IP stays blocked
+xban.auth_block_time (Block duration) int 3600 1
